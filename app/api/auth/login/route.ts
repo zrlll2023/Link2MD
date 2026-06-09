@@ -10,14 +10,14 @@ const VALID_USERNAME = 'admin';
 const VALID_PASSWORD_HASH = crypto.createHash('sha256').update('test').digest('hex');
 
 // ─── 创建签名 Session Token ──────────────────────────────────────────────────
-export function createSessionToken(): string {
+function createSessionToken(): string {
     const payload = `${Date.now()}:${crypto.randomBytes(16).toString('hex')}`;
     const sig = crypto.createHmac('sha256', SECRET).update(payload).digest('hex');
     return Buffer.from(JSON.stringify({ payload, sig })).toString('base64url');
 }
 
 // ─── 验证 Session Token ──────────────────────────────────────────────────────
-export function verifySessionToken(token: string): boolean {
+function verifySessionToken(token: string): boolean {
     try {
         const { payload, sig } = JSON.parse(Buffer.from(token, 'base64url').toString());
         const expected = crypto.createHmac('sha256', SECRET).update(payload).digest('hex');

@@ -6,7 +6,7 @@
 
 - **网页转 Markdown**：输入 URL，自动爬取正文内容并转换为标准 Markdown。
 - **多平台适配**：
-  - **国内平台**：微信公众号、CSDN、掘金、牛客网。
+  - **国内平台**：微信公众号、CSDN、掘金、牛客网、**Boss 直聘**。
   - **学术/生命科学**：**PubMed** (`pubmed.ncbi.nlm.nih.gov`)、**NCBI GEO** (`ncbi.nlm.nih.gov/geo`)。
 - **实时预览**：Markdown 编辑器与渲染预览双栏显示。
 - **一键复制 / 下载**：将转换结果直接复制到剪贴板或下载为 `.md` 文件。
@@ -24,7 +24,7 @@
 | Google Gemini | 2.0 Flash / Pro、1.5 Pro | [aistudio.google.com](https://aistudio.google.com/app/apikey) |
 | OpenAI | GPT-4o 系列、o3-mini | [platform.openai.com](https://platform.openai.com/api-keys) |
 | Anthropic Claude | 3.5 Sonnet / Haiku、4.5 系列 | [console.anthropic.com](https://console.anthropic.com/settings/keys) |
-| DeepSeek | V3 / R1 | [platform.deepseek.com](https://platform.deepseek.com/api_keys) |
+| DeepSeek | V3 / R1 / V4 Flash / V4 Pro | [platform.deepseek.com](https://platform.deepseek.com/api_keys) |
 | 智谱 GLM | GLM-4 全系列（含**免费版**） | [bigmodel.cn](https://bigmodel.cn/usercenter/apikeys) |
 
 ## 快速开始

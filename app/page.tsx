@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
-import { Copy, Download, Loader2, ArrowRight, Menu, X, Key, Send, Bot, AlertCircle, CheckCircle2, LogOut, Clock, Trash2, History } from 'lucide-react';
+import { Copy, Download, Loader2, ArrowRight, Menu, X, Key, Send, Bot, AlertCircle, CheckCircle2, Clock, Trash2, History } from 'lucide-react';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface ChatMessage {
@@ -68,6 +67,8 @@ const PROVIDERS = [
     models: [
       { id: 'deepseek-chat', name: 'DeepSeek V3' },
       { id: 'deepseek-reasoner', name: 'DeepSeek R1' },
+      { id: 'deepseek-v4-flash', name: 'DeepSeek V4 Flash' },
+      { id: 'deepseek-v4-pro', name: 'DeepSeek V4 Pro' },
     ],
   },
   {
@@ -89,20 +90,12 @@ type ProviderId = typeof PROVIDERS[number]['id'];
 
 // ─── Main Page Component ──────────────────────────────────────────────────────
 export default function Home() {
-  const router = useRouter();
   // ── Converter State ──
   const [url, setUrl] = useState('');
   const [markdown, setMarkdown] = useState('');
   const [title, setTitle] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-
-  // ── Auth guard 已由 middleware.ts 处理，无需 sessionStorage ──
-
-  const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
-    router.push('/login');
-  };
 
   // ── History State ──
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -843,44 +836,14 @@ export default function Home() {
           <Menu size={20} />
         </button>
 
-        {/* 退出登录按钮（右上角）*/}
-        <button
-          onClick={handleLogout}
-          title="退出登录"
-          style={{
-            position: 'fixed',
-            top: 16,
-            right: 16,
-            zIndex: 30,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            padding: '8px 14px',
-            borderRadius: 10,
-            border: '1.5px solid #d4cfc9',
-            background: '#e8e4df',
-            color: '#5a5550',
-            fontSize: 13,
-            fontWeight: 600,
-            cursor: 'pointer',
-            transition: 'background 0.2s, color 0.2s',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = '#d97757'; e.currentTarget.style.color = 'white'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = '#e8e4df'; e.currentTarget.style.color = '#5a5550'; }}
-        >
-          <LogOut size={14} />
-          退出
-        </button>
-
-        {/* 历史搜索按鈕（退出鈤下方）*/}
+        {/* 历史搜索按钮（右上角）*/}
         <button
           id="history-toggle-btn"
           onClick={() => setHistoryOpen(true)}
           title="历史搜索记录"
           style={{
             position: 'fixed',
-            top: 62,
+            top: 16,
             right: 16,
             zIndex: 30,
             display: 'flex',
