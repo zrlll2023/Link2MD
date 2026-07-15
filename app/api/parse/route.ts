@@ -153,26 +153,6 @@ export async function POST(req: NextRequest) {
                 contentHtml = mainContent.html() || '';
             }
 
-        } else if (domain.includes('zhipin.com')) {
-            // Boss Zhipin
-            title = $('title').text().trim();
-            const jobDetail = $('.job-box, .job-detail, .job-sec, .job-body-wrapper');
-            const jobList = $('.job-list-box, .job-list, .search-job-result');
-            const mainContent = $('#wrap').length ? $('#wrap') : $('#main');
-
-            if (jobDetail.length) {
-                let combined = `<h2>${title}</h2>`;
-                jobDetail.each((_, el) => {
-                    combined += $(el).html() + '<hr/>';
-                });
-                contentHtml = combined;
-            } else if (jobList.length) {
-                contentHtml = jobList.html() || '';
-            } else {
-                mainContent.find('script, style, header, footer, nav, .sidebar, .job-banner').remove();
-                contentHtml = mainContent.html() || $('body').html() || '';
-            }
-
         } else {
             // Fallback for unknown domains
             contentHtml = $('article').html() || $('main').html() || ''; // Try common article/main tags first
