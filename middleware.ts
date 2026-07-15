@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// ─── 简化版：直接放行所有请求，移除登录验证 ────────────────────────────────────
 export function middleware(req: NextRequest) {
     // 添加安全 Headers
     const res = NextResponse.next();

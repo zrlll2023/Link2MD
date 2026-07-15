@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Copy, Download, Loader2, ArrowRight, Menu, X, Key, Send, Bot, AlertCircle, CheckCircle2, Clock, Trash2, History } from 'lucide-react';
+import { Copy, Download, Loader2, ArrowRight, Menu, X, Key, Send, Bot, AlertCircle, CheckCircle2, Clock, Trash2, History, Settings } from 'lucide-react';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface ChatMessage {
@@ -100,6 +100,10 @@ export default function Home() {
   // ── History State ──
   const [historyOpen, setHistoryOpen] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
+
+  // ── Download Settings State ──
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [downloadFormat, setDownloadFormat] = useState<'obsidian' | 'standard'>('obsidian');
 
   // ── 时间格式化函数 ──
   const formatRelativeTime = (timestamp: number): string => {
@@ -207,6 +211,34 @@ export default function Home() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleBatchDownload = async () => {
+    if (!markdown) return;
+    try {
+      const res = await fetch('/api/download', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          markdown,
+          title,
+          format: downloadFormat,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || '打包下载失败');
+      }
+      const blob = await res.blob();
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `${title.replace(/[\\/:*?"<>|]/g, '_') || '文章'}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err: any) {
+      alert(err.message);
+    }
   };
 
   // ── API Key Handler ──
@@ -352,6 +384,10 @@ export default function Home() {
       <div
         className={`history-overlay ${historyOpen ? 'open' : ''}`}
         onClick={() => setHistoryOpen(false)}
+      />
+      <div
+        className={`history-overlay ${settingsOpen ? 'open' : ''}`}
+        onClick={() => setSettingsOpen(false)}
       />
 
       {/* ── Sidebar Panel ── */}
@@ -836,7 +872,7 @@ export default function Home() {
           <Menu size={20} />
         </button>
 
-        {/* 历史搜索按钮（右上角）*/}
+        {/* ── 右上角按钮组 ── */}
         <button
           id="history-toggle-btn"
           onClick={() => setHistoryOpen(true)}
@@ -844,7 +880,7 @@ export default function Home() {
           style={{
             position: 'fixed',
             top: 16,
-            right: 16,
+            right: 68,
             zIndex: 30,
             display: 'flex',
             alignItems: 'center',
@@ -880,6 +916,33 @@ export default function Home() {
             }}>{history.length}</span>
           )}
         </button>
+        <button
+          id="settings-toggle-btn"
+          onClick={() => setSettingsOpen(true)}
+          title="下载设置"
+          style={{
+            position: 'fixed',
+            top: 16,
+            right: 16,
+            zIndex: 30,
+            width: 40,
+            height: 40,
+            borderRadius: 10,
+            border: '1.5px solid #d4cfc9',
+            background: '#e8e4df',
+            color: '#5a5550',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'background 0.2s, color 0.2s',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = '#d97757'; e.currentTarget.style.color = 'white'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = '#e8e4df'; e.currentTarget.style.color = '#5a5550'; }}
+        >
+          <Settings size={18} />
+        </button>
 
         <div style={{ maxWidth: 1280, margin: '0 auto' }}>
 
@@ -896,7 +959,7 @@ export default function Home() {
               Link2MD
             </h1>
             <p style={{ color: '#9a9490', fontWeight: 500, letterSpacing: '0.02em', margin: 0, fontSize: 15 }}>
-              支持：微信公众号 · CSDN · 掘金 · 牛客网 · PubMed · NCBI GEO
+              目前支持转化：微信公众号 · CSDN · 稀土掘金 · 牛客网 · PubMed · NCBI GEO
             </p>
           </div>
 
@@ -914,7 +977,7 @@ export default function Home() {
               value={url}
               onChange={e => setUrl(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && !isLoading && url && handleParse()}
-              placeholder="粘贴链接（支持微信公众号、CSDN、掘金、牛客网、PubMed、NCBI GEO）..."
+              placeholder="请在此处粘贴目标链接"
               style={{
                 flex: 1,
                 padding: '13px 18px',
@@ -971,10 +1034,39 @@ export default function Home() {
                 </>
               ) : (
                 <>
-                  开始转换
+一键转换
                   <ArrowRight size={18} />
                 </>
               )}
+            </button>
+            <button
+              id="batch-download-btn"
+              onClick={handleBatchDownload}
+              disabled={!markdown}
+              style={{
+                padding: '13px 24px',
+                borderRadius: 12,
+                border: 'none',
+                background: !markdown
+                  ? '#e0dbd5'
+                  : 'linear-gradient(135deg, #d97757, #c56b4d)',
+                color: !markdown ? '#b0aaa3' : 'white',
+                fontWeight: 700,
+                fontSize: 14,
+                cursor: !markdown ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                minWidth: 140,
+                justifyContent: 'center',
+                boxShadow: !markdown ? 'none' : '0 2px 8px rgba(217, 119, 87, 0.30)',
+                transition: 'background 0.2s, box-shadow 0.2s, transform 0.1s',
+              }}
+              onMouseDown={e => { if (markdown) e.currentTarget.style.transform = 'scale(0.97)'; }}
+              onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}
+            >
+              <Download size={18} />
+              一键下载
             </button>
           </div>
 
@@ -1118,7 +1210,7 @@ export default function Home() {
             </div>
             <div>
               <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: '#2d2d2d' }}>历史搜索</p>
-              <p style={{ margin: 0, fontSize: 11, color: '#9a9490' }}>最多保存30条 · 仅本次登录有效</p>
+              <p style={{ margin: 0, fontSize: 11, color: '#9a9490' }}>最多保存30条 · 仅在当前页面有效</p>
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -1221,6 +1313,103 @@ export default function Home() {
             </p>
           </div>
         )}
+      </aside>
+
+      {/* ── Settings Right Panel ── */}
+      <aside className={`history-panel ${settingsOpen ? 'open' : ''}`}>
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '16px 20px', borderBottom: '1px solid #d4cfc9', flexShrink: 0,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ width: 30, height: 30, borderRadius: 8, background: 'linear-gradient(135deg, #d97757, #c56b4d)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Settings size={15} color="white" />
+            </div>
+            <div>
+              <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: '#2d2d2d' }}>设置</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setSettingsOpen(false)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9a9490', borderRadius: 6, padding: 4, display: 'flex', alignItems: 'center', transition: 'color 0.2s' }}
+            onMouseEnter={e => (e.currentTarget.style.color = '#2d2d2d')}
+            onMouseLeave={e => (e.currentTarget.style.color = '#9a9490')}
+          >
+            <X size={18} />
+          </button>
+        </div>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px' }}>
+          <div style={{
+            padding: '12px 16px', borderRadius: 10,
+            background: '#fff8f5', border: '1px solid #f0d8ce',
+            marginBottom: 20, fontSize: 12, color: '#7a7470', lineHeight: 1.6,
+          }}>
+            设置页面，后续可扩展更多配置项。
+          </div>
+
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            marginBottom: 12,
+          }}>
+            <div style={{ width: 4, height: 18, borderRadius: 2, background: '#d97757' }} />
+            <p style={{ margin: 0, fontWeight: 700, fontSize: 13, color: '#2d2d2d', letterSpacing: '0.03em' }}>下载设置</p>
+          </div>
+          <p style={{ margin: '0 0 16px', fontSize: 12, color: '#9a9490', lineHeight: 1.6, paddingLeft: 12 }}>
+            批量下载时，Markdown 文档中的图片链接将根据所选格式替换为本地图片路径。
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingLeft: 12 }}>
+            <label
+              onClick={() => setDownloadFormat('obsidian')}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '14px 16px', borderRadius: 12,
+                background: downloadFormat === 'obsidian' ? '#fff0eb' : '#ffffff',
+                border: `1.5px solid ${downloadFormat === 'obsidian' ? '#d97757' : '#d4cfc9'}`,
+                cursor: 'pointer', transition: 'all 0.15s',
+              }}
+            >
+              <div style={{
+                width: 20, height: 20, borderRadius: '50%',
+                border: `2px solid ${downloadFormat === 'obsidian' ? '#d97757' : '#c9c4be'}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0,
+              }}>
+                {downloadFormat === 'obsidian' && (
+                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#d97757' }} />
+                )}
+              </div>
+              <div>
+                <p style={{ margin: 0, fontWeight: 600, fontSize: 13, color: '#2d2d2d' }}>Obsidian 风格</p>
+                <p style={{ margin: '2px 0 0', fontSize: 11, color: '#b0aaa3', fontFamily: 'monospace' }}>{'![[filename.png]]'}</p>
+              </div>
+            </label>
+            <label
+              onClick={() => setDownloadFormat('standard')}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '14px 16px', borderRadius: 12,
+                background: downloadFormat === 'standard' ? '#fff0eb' : '#ffffff',
+                border: `1.5px solid ${downloadFormat === 'standard' ? '#d97757' : '#d4cfc9'}`,
+                cursor: 'pointer', transition: 'all 0.15s',
+              }}
+            >
+              <div style={{
+                width: 20, height: 20, borderRadius: '50%',
+                border: `2px solid ${downloadFormat === 'standard' ? '#d97757' : '#c9c4be'}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0,
+              }}>
+                {downloadFormat === 'standard' && (
+                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#d97757' }} />
+                )}
+              </div>
+              <div>
+                <p style={{ margin: 0, fontWeight: 600, fontSize: 13, color: '#2d2d2d' }}>标准 Markdown</p>
+                <p style={{ margin: '2px 0 0', fontSize: 11, color: '#b0aaa3', fontFamily: 'monospace' }}>{'![alt](图片/文章名/image.png)'}</p>
+              </div>
+            </label>
+          </div>
+        </div>
       </aside>
 
       {/* Spin animation */}
