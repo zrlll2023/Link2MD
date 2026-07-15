@@ -1,7 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "WebFetch(domain:link2-md.vercel.app)"
-    ]
-  }
-}
